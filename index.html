@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+        <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+        width: 100%;
+        min-height: 100vh; /* Dùng min-height để không bị cắt nội dung */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        padding: 20px; /* Thêm padding để không dính sát mép màn hình */
+        background-color: #f4f4f4;
+    }
+
+    form {
+        border: 2px solid black;
+        width: 100%;       /* Co giãn theo container */
+        max-width: 500px;  /* Nhưng không quá 500px */
+        padding: 20px;
+        min-height: 600px; /* Dùng min-height thay vì height cố định */
+        border-radius: 12px;
+        background: white;
+    }
+
+    img {
+        width: 100%;       /* Co giãn theo container */
+        max-width: 400px;  /* Nhưng không quá 400px */
+        height: auto;      /* Giữ tỉ lệ ảnh */
+        aspect-ratio: 2/3; /* Giữ khung ảnh cố định nếu muốn */
+        object-fit: cover;
+        object-position: center;
+        border-radius: 12px;
+    }
+
+    button {
+        width: 100%; /* Cho nút bấm to ra trên mobile để dễ ấn */
+        height: 50px;
+        background: linear-gradient(45deg, red, blue);
+        color: white;
+        font-weight: bold;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+    }
+    
+    button:disabled {
+        background: gray;
+    }
+
+    /* Responsive cho Mobile */
+    @media screen and (max-width: 768px) {
+        body {
+            flex-direction: column-reverse; /* Đưa ảnh lên trên hoặc form lên trên tùy ý */
+            justify-content: flex-start;
+        }
+
+        form, img {
+            width: 100%; /* Full màn hình mobile */
+            max-width: 100%;
+        }
+        
+        img {
+            height: 300px; /* Trên mobile ảnh không nên quá dài */
+        }
+    }
+</style>
+    </head>
+    <body>
+        <form bindsubmit="" action="" method="post">
+            <label for="">Nhập tên của bạn</label>
+            <br>
+            <input type="text" name="name" id="name">
+            <span e-data="name"></span>
+            <br>
+            <br>
+
+            <label for="">Nhập sdt của bạn</label>
+            <br>
+            <input type="text" name="phone" id="phone">
+            <span e-data="phone"></span>
+            <br>
+            <br>
+
+            <label for="">Mời chọn đào</label>
+            <br>
+            <select name="dao" id="dao">
+                <option value="1">Phương Anh</option>
+                <option value="2">Hồng Anh</option>
+                <option value="3">Thúy Anh</option>
+            </select>
+            <br>
+            <br>
+
+            <label for="">Đơn giá/giờ</label>
+            <br>
+            <input type="text" name="price" id="price" value="1,000,000 VND" readonly>
+            <br>
+            <br>
+
+            <label for="">Số giờ</label>
+            <br>
+            <input type="text" name="gio" id="gio" value="1">
+            <br>
+            <br>
+
+            <label for="">Chọn dịch vụ</label>
+            <br>
+            <input type="radio" name="service" id="service" value="0" checked> Massage
+            <input type="radio" name="service" id="service" value="1"> Full A-Z
+            <br>
+            <br>
+            <hr>
+            <label for="">Tổng thanh toán</label>
+            <h1 id="total"></h1>
+            <hr>
+            <br>
+            <button type="submit" disabled>Đặt lịch</button>
+        </form>
+
+        <img src="" alt="">
+        
+        <script src="./User.js">
+        </script>
+
+        <script>
+            const form = document.querySelector('form');
+            document.querySelector("img").src = "https://anhtomau.com/wp-content/uploads/2026/01/Anh-gai-xinh-mong-to-phong-cach-sexy.webp";
+            document.getElementById("total").innerText = `1,000,000 VND` ;
+            const btn = document.querySelector("button");
+
+            function xuLy(){
+
+                // gán dữ liệu từ form vào class object
+                const data = Object.fromEntries(new FormData(form).entries());
+                const user = new User(data);
+                console.log(user);
+
+                // xử lý logic giá
+
+                document.getElementById("price").value = `${user.getPrice().toLocaleString()} VND`;
+                document.getElementById("total").innerText = `${user.getTotalPrice().toLocaleString()} VND` ;
+                document.querySelector("img").src = user.getDaoImgUrl();
+
+                // xử lý validate
+                let isValid = user.validate();
+
+                // hiển thị lỗi qua các thẻ span
+                const errMessages = document.querySelectorAll("span");
+                errMessages.forEach(span => {
+                    let key = span.getAttribute("e-data");
+                    if(user.errors[key]){
+                        span.innerText = user.errors[key];
+                        span.style.color = 'red';
+                    }else{
+                        span.innerText = "✅";
+                    }
+                });
+
+                if(isValid){
+                    btn.disabled = false;
+                    return `Cảm ơn bạn đã book đào, đào sẽ đến trong 30 phút nữa!`;
+                }else{
+                    return false;
+                }
+
+            }
+
+            form.addEventListener("input", ()=>{
+                xuLy();
+            });
+
+            form.addEventListener("focusin", ()=>{
+                xuLy();
+            }, {once:true});
+
+            form.addEventListener("submit", (e)=>{
+                e.preventDefault();
+                let check = xuLy();
+                if(check){
+                    alert(check);
+                }
+            });
+
+        </script>
+    </body>
+</html>
